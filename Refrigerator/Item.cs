@@ -8,7 +8,8 @@ namespace Refrigerator
 {
     internal class Item
     {
-        public int ID { get; set; }
+        public static int uniqueId = 1;
+        public int ID { get;}
         public string Name { get; set; }
         public int ItemShelf { get; set; }
         public string Type { get; set; }
@@ -16,15 +17,22 @@ namespace Refrigerator
         public DateTime ExpiryDate { get; set; }
         public double SpaceInCm { get; set; }
 
-        public Item(int id, string name, int itemShelf, string type, string kosher, DateTime expiryDate, double spaceInCm)
+        public Item(string name, string type, string kosher, DateTime expiryDate, double spaceInCm)
         {
-            ID = id;
+            ID = uniqueId++;
             Name = name;
-            ItemShelf = itemShelf;
             Type = type;
             Kosher = kosher;
             ExpiryDate = expiryDate;
             SpaceInCm = spaceInCm;
         }
+        public override string ToString()
+        {
+            return $"Item ID: {ID}\nName: {Name}\nShelf: {ItemShelf}\nType: {Type}\nKosher: {Kosher}\nExpiry Date: {ExpiryDate.ToShortDateString()}\nSpaceCm: {SpaceInCm} ";
+        }
+
+       
+
+
     }
 }
