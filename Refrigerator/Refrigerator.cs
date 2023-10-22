@@ -30,6 +30,30 @@ namespace Refrigerator
             return $"Refrigerator ID: {ID}\nModel: {Model}\nColor: {Color}\nNumber of Shelves: {NumberOfShelves}\nShelves: {shelfList}";
         }
 
+        public string ReturnAllShelves()
+        {
+            Console.WriteLine(ToString());
+            string shelves = "";
+            if(Shelves.Count() == 0)
+            {
+                Console.WriteLine("The refrigerator is empty");
+            }
+            else
+            {
+                foreach(Shelf shelf in Shelves)
+                {
+                    shelves += shelf.ToString();
+                }
+            }
+            return shelves;
+
+        }
+
+        public void AddShelf(Shelf shelf)
+        {
+            Shelves.Add(shelf);
+        }
+
         public double GetRemainingSpaceInRefrigerator()
         {
             double totalSpaceInRefrigerator = 0;
@@ -44,15 +68,17 @@ namespace Refrigerator
         {
             foreach (Shelf shelf in Shelves)
             {
-                if (shelf.GetRemainingSpaceShelf() >= item.SpaceInCm)
+                if (GetRemainingSpaceInRefrigerator() >= item.SpaceInCm)
                 {
                     shelf.Items.Add(item);
                     item.ItemShelf = shelf.ID; 
-                    shelf.ShelfSpace -= item.SpaceInCm;
                     Console.WriteLine("A new item has been placed in the refrigerator");
+                    break;
                 }
-                else
+                else 
+                { 
                     Console.WriteLine("No space found in the fridge");
+                }
             }
         }
 
@@ -74,26 +100,16 @@ namespace Refrigerator
             }
         }
 
-        public List<List<Item>> WantEat(string type, string kosher)
+        public List<Item> WhatEat(string type, string kosher)
         {
-            List<List<Item>> itemsInFridge = new List<List<Item>>();
+            List<Item> itemsInFridge = new List<Item>();
             
             foreach(Shelf shelf in Shelves)
             {
-                itemsInFridge.Add(shelf.WantEat(type, kosher));
+                itemsInFridge.AddRange(shelf.WhatEat(type, kosher));
             }
             return itemsInFridge;
         }
-
-        //public double SumOfFreeSpace()
-        //{
-        //    double sum = 0;
-        //    foreach(Shelf shelf in Shelves)
-        //    {
-        //        sum += shelf.ShelfSpace;
-        //    }
-        //    return sum;
-        //}
 
         public List<Refrigerator> SortRefrigeratorsByFreeSpace(List<Refrigerator> refrigerators)
         {
@@ -101,6 +117,17 @@ namespace Refrigerator
             return refrigerators;
         }
 
+        public List<Shelf> SortShelvesBySpaceDescending(List<Shelf> shelves)
+        {
+            List<Shelf> sortShelves = new List<Shelf>();
+            sortShelves = shelves;
+            sortShelves.Sort((shelf1, shelf2) => shelf2.GetRemainingSpaceShelf().CompareTo(shelf1.ShelfSpace));
+            foreach(Shelf shelf in sortShelves)
+            {
+                Console.WriteLine(shelf);
+            }
+            return sortShelves;
+        }
         public List<Item> SortItemsInFridge()
         {
             List<Item> itemsInFridge = new List<Item>();
@@ -111,46 +138,14 @@ namespace Refrigerator
                 itemsInFridge.AddRange(itemsInShelf);
             }
             itemsInFridge.Sort((item1, item2) => item1.ExpiryDate.CompareTo(item2.ExpiryDate));
+            foreach(Item item in itemsInFridge)
+            {
+                Console.WriteLine(item);
+            }
             return itemsInFridge;
         }
-
-        public void ThrowingProductsForShopping()
-        {
-            DateTime expiresInThreeDays = DateTime.Now.Date.AddDays(3);
-            DateTime expiresInWeek = DateTime.Now.Date.AddDays(7);
-            DateTime expiresInOneDay = DateTime.Now.Date.AddDays(1);
-            string dairy = "Dairy";
-            string meat = "Meat";
-            string fur = "Fur";
-
-            foreach (Shelf shelf in Shelves)
-            {
-                shelf.ThrowingProducts(dairy, expiresInThreeDays);
-            }
-                Console.WriteLine("The dairy products that expire in three days were thrown in the trash to make space for shopping");
-            if (GetRemainingSpaceInRefrigerator() < 20)
-            {
-                foreach (Shelf shelf in Shelves)
-                {
-                    shelf.ThrowingProducts(meat, expiresInWeek);
-                }
-                Console.WriteLine("Now the meat products that expire in week were thrown in the trash to make space for shopping");
-
-            }
-            if (GetRemainingSpaceInRefrigerator() < 20)
-            {
-                foreach (Shelf shelf in Shelves)
-                {
-                    shelf.ThrowingProducts(fur, expiresInOneDay);
-                }
-                Console.WriteLine("And now the fur products that expire in one dey were thrown in the trash to make space for shopping");
-
-            }
-
-            Console.WriteLine("Now you have enough free space to shop");
-
-        }
-
+        
+        //Checking whether they will remove products whose expiration date is close, there will be enough space to shop
         public double CheckingFreeSpaceForShopping()
         {
             DateTime expiresInThreeDays = DateTime.Now.Date.AddDays(3);
@@ -205,6 +200,44 @@ namespace Refrigerator
 
         }
 
+        //Removing products that expire soon
+        public void ThrowingProductsForShopping()
+        {
+            DateTime expiresInThreeDays = DateTime.Now.Date.AddDays(3);
+            DateTime expiresInWeek = DateTime.Now.Date.AddDays(7);
+            DateTime expiresInOneDay = DateTime.Now.Date.AddDays(1);
+            string dairy = "Dairy";
+            string meat = "Meat";
+            string fur = "Fur";
+
+            foreach (Shelf shelf in Shelves)
+            {
+                shelf.ThrowingProducts(dairy, expiresInThreeDays);
+            }
+            Console.WriteLine("The dairy products that expire in three days were thrown in the trash to make space for shopping");
+            if (GetRemainingSpaceInRefrigerator() < 20)
+            {
+                foreach (Shelf shelf in Shelves)
+                {
+                    shelf.ThrowingProducts(meat, expiresInWeek);
+                }
+                Console.WriteLine("Now the meat products that expire in week were thrown in the trash to make space for shopping");
+
+            }
+            if (GetRemainingSpaceInRefrigerator() < 20)
+            {
+                foreach (Shelf shelf in Shelves)
+                {
+                    shelf.ThrowingProducts(fur, expiresInOneDay);
+                }
+                Console.WriteLine("And now the fur products that expire in one dey were thrown in the trash to make space for shopping");
+
+            }
+
+            Console.WriteLine("Now you have enough free space to shop");
+
+        }
+        //Preparing the fridge for shopping
         public void PreparingFridgeForShopping()
         {
             if(GetRemainingSpaceInRefrigerator() < 20)
@@ -221,8 +254,32 @@ namespace Refrigerator
             else
                 Console.WriteLine("You have enough space in the fridge to shop and you don't have to throw anything away");
         }
+        //Cleaning the refrigerator of products whose expiration date is soon - for the purpose of printing
+        public string CleanRefrigerator()
+        {
+            DateTime expiresInThreeDays = DateTime.Now.Date.AddDays(3);
+            DateTime expiresInWeek = DateTime.Now.Date.AddDays(7);
+            DateTime expiresInOneDay = DateTime.Now.Date.AddDays(1);
+            string dairy = "Dairy";
+            string meat = "Meat";
+            string fur = "Fur";
+            string itemsString = "";
 
+            foreach(Shelf shelf in Shelves)
+            {
+                itemsString += shelf.CheckingProductsExpireSoonOfString(dairy, expiresInThreeDays);
+            }
+            foreach(Shelf shelf in Shelves)
+            {
+                itemsString += shelf.CheckingProductsExpireSoonOfString(meat, expiresInWeek);
+            }
+            foreach (Shelf shelf in Shelves)
+            {
+                itemsString += shelf.CheckingProductsExpireSoonOfString(fur, expiresInOneDay);
+            }
+            return itemsString;
 
+        }
 
     }
     }

@@ -28,21 +28,50 @@ namespace Refrigerator
             return $"Shelf ID: {ID}\nFloor Number: {FloorNumber}\nShelf Space: {ShelfSpace} square meters\nItems on Shelf: {itemList}";
         }
 
+        public string ReturnAllItems()
+        {
+            string items = "";
+
+            foreach (Item item in Items)
+            {
+                if (Items.Count() == 0)
+                {
+                    Console.WriteLine("The refrigerator is empty");
+                }
+                else 
+                { 
+                items += item.ToString();
+                }
+            }
+            return items;
+           
+          }
+             
+
         public double GetRemainingSpaceShelf()
         {
             double remainingShelfSpace = 0;
             double allSpaceOfItems = 0;
+            if (Items.Count() == 0)
+                return ShelfSpace;
+            else 
+            { 
             foreach (Item item in Items)
             {
                 allSpaceOfItems += item.SpaceInCm;
             }
 
-            if (allSpaceOfItems < ShelfSpace)
+            if (allSpaceOfItems < ShelfSpace) 
+                { 
                 remainingShelfSpace = ShelfSpace - allSpaceOfItems;
-            else
+                }
+            else 
+                { 
                 remainingShelfSpace = 0;
+                }
 
-            return remainingShelfSpace;
+             return remainingShelfSpace;
+            }
         }
 
         public Item FindItem(int idItem)
@@ -62,26 +91,21 @@ namespace Refrigerator
             {
                 if (item.ID == idItem)
                 {
-                    removeItem = item;
-                    Items.Remove(item);
-                    ShelfSpace += item.SpaceInCm;
+                    removeItem = item;                  
                 }
             }
+            Items.Remove(removeItem);
+            Console.WriteLine(removeItem);
             return removeItem;
         }
 
         public void ThrowingExpiredItemsFromShelf()
         {
-            foreach (Item item in Items)
-            {
-                if (item.ExpiryDate < DateTime.Now)
-                {
-                    RemoveItemFromShelf(item.ID);
-                }
-            }
+           
+           Items.RemoveAll(item => item.ExpiryDate < DateTime.Now);
         }
 
-        public List<Item> WantEat(string type, string kosher)
+        public List<Item> WhatEat(string type, string kosher)
         {
             List<Item> items = new List<Item>();
             foreach (Item item in Items)
@@ -92,11 +116,7 @@ namespace Refrigerator
             return items;
         }
 
-        public List<Shelf> SortShelvesBySpaceDescending(List<Shelf> shelves)
-        {
-            shelves.Sort((shelf1, shelf2) => shelf2.ShelfSpace.CompareTo(shelf1.ShelfSpace));
-            return shelves;
-        }
+       
 
         public List<Item> SortItemsByDate(List<Item> items)
         {
@@ -114,6 +134,17 @@ namespace Refrigerator
                     sum += item.SpaceInCm;
             }
             return sum;
+        }
+
+        public string CheckingProductsExpireSoonOfString(string kosher, DateTime date)
+        {
+            string items = "";
+            foreach (Item item in Items)
+            {
+                if (item.Kosher.Equals(kosher) && item.ExpiryDate <= date)
+                    items += item.ToString();
+            }
+            return items;
         }
 
         public void ThrowingProducts(string kosher, DateTime date)
