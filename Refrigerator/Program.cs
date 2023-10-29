@@ -28,6 +28,7 @@ namespace Refrigerator
             Item eggs = new Item("eggs", "food", "fur", new DateTime(2024, 3, 15), 12);
             refrigerator1.PutItemInFridge(milk);
             refrigerator1.PutItemInFridge(eggs);
+            Console.WriteLine(refrigerator1);
 
             try
             {
@@ -39,16 +40,19 @@ namespace Refrigerator
                     switch (choice)
                     {
                         case 1:
-                            Console.WriteLine(refrigerator1.ReturnAllShelves());
+                            Console.WriteLine(refrigerator1.GetAllShelves());
                             break;
                         case 2:
-                            Console.WriteLine(refrigerator1.GetRemainingSpaceInRefrigerator());
+                            Console.WriteLine(refrigerator1.GetFreeSpace());
                             break;
                         case 3:
                             AddItemToRefrigerator(refrigerator1);
                             break;
                         case 4:
+                            { 
                             refrigerator1.RemoveItemFromFridge(milk.ID);
+                            Console.WriteLine(refrigerator1);
+                            }
                             break;
                         case 5:
                             Console.WriteLine(refrigerator1.CleanRefrigerator());
@@ -60,7 +64,7 @@ namespace Refrigerator
                             Console.WriteLine(refrigerator1.SortItemsInFridge());
                             break;
                         case 8:
-                            refrigerator1.SortShelvesBySpaceDescending(refrigerator1.Shelves);
+                            refrigerator1.SortedShelves(refrigerator1.Shelves);
                             break;
                         case 9:
                             Console.WriteLine(refrigerator1.SortRefrigeratorsByFreeSpace(refrigeratorItems));
@@ -169,7 +173,7 @@ namespace Refrigerator
                 string type = Console.ReadLine();
                 string kosher = Console.ReadLine();
 
-                listItems = refrigerator.WhatEat(type, kosher);
+                listItems = refrigerator.WhaTotEat(type, kosher);
                 foreach (Item item in listItems)
                 {
                 Console.WriteLine(item);

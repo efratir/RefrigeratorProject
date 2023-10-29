@@ -8,160 +8,142 @@ namespace Refrigerator
 {
     internal class Shelf
     {
-        public static int uniqueId = 1;
-        public int ID { get; }
+        
+        public Guid ID { get; }
         public int FloorNumber { get; set; }
-        public double ShelfSpace { get; set; }
+        public double SpaceOfShelf { get; set; }
+        public double FreeSpaceOfShelf { get; set; }
         public List<Item> Items { get; set; }
 
-        public Shelf(int floorNumber, double shelfSpace)
+        public Shelf(int floorNumber, double spaceOfShelf)
         {
-            ID = uniqueId++;
+            ID = new Guid();
             FloorNumber = floorNumber;
-            ShelfSpace = shelfSpace;
+            SpaceOfShelf = spaceOfShelf;
+            FreeSpaceOfShelf = spaceOfShelf;
             Items = new List<Item>();
         }
 
         public override string ToString()
         {
             string itemList = string.Join(", ", Items);
-            return $"Shelf ID: {ID}\nFloor Number: {FloorNumber}\nShelf Space: {ShelfSpace} square meters\nItems on Shelf: {itemList}";
+
+            string result = $"Shelf ID: {ID}\n";
+            result += $"Floor Number: {FloorNumber}\n";
+            result += $"Shelf Space: {SpaceOfShelf} square meters\n";
+            result += $"Free Shelf Space: {FreeSpaceOfShelf} square meters\n";
+            result += $"Items on Shelf: {itemList}";
+
+            return result;
         }
 
-        public string ReturnAllItems()
+        public string GetAllItems()
         {
             string items = "";
 
-            foreach (Item item in Items)
+            if (Items.Count == 0)
             {
-                if (Items.Count() == 0)
-                {
-                    Console.WriteLine("The refrigerator is empty");
-                }
-                else 
-                { 
-                items += item.ToString();
-                }
+                Console.WriteLine("The refrigerator is empty");
             }
+            else
+            {
+                items = string.Join("", Items.Select(item => item.ToString()));
+            }
+
             return items;
-           
-          }
-             
-
-        public double GetRemainingSpaceShelf()
-        {
-            double remainingShelfSpace = 0;
-            double allSpaceOfItems = 0;
-            if (Items.Count() == 0)
-                return ShelfSpace;
-            else 
-            { 
-            foreach (Item item in Items)
-            {
-                allSpaceOfItems += item.SpaceInCm;
-            }
-
-            if (allSpaceOfItems < ShelfSpace) 
-                { 
-                remainingShelfSpace = ShelfSpace - allSpaceOfItems;
-                }
-            else 
-                { 
-                remainingShelfSpace = 0;
-                }
-
-             return remainingShelfSpace;
-            }
         }
 
-        public Item FindItem(int idItem)
+
+        public double GetFreeSpace()
         {
-            foreach (Item item in Items)
-            {
-                if (item.ID == idItem)
-                    return item;
-            }
-            return null;
+            return FreeSpaceOfShelf;
+            //double remainingShelfSpace = 0;
+            //double allSpaceOfItems = 0;
+            //if (Items.Count() == 0)
+            //    return SpaceOfShelf;
+            //else 
+            //{ 
+            //foreach (Item item in Items)
+            //{
+            //    allSpaceOfItems += item.SpaceInCm;
+            //}
+
+            //if (allSpaceOfItems < SpaceOfShelf) 
+            //    { 
+            //    remainingShelfSpace = SpaceOfShelf - allSpaceOfItems;
+            //    }
+            //else 
+            //    { 
+            //    remainingShelfSpace = 0;
+            //    }
+
+            // return remainingShelfSpace;
+            //}
         }
 
-        public Item RemoveItemFromShelf(int idItem)
+        public Item FindItemById(Guid idItem)
         {
-            Item removeItem = null;
-            foreach (Item item in Items)
+            return Items.FirstOrDefault(item => item.ID == idItem);
+        }
+
+        public Item RemoveItem(Guid idItem)
+        {
+            Item removeItem = Items.FirstOrDefault(item => item.ID == idItem);
+
+            if (removeItem != null)
             {
-                if (item.ID == idItem)
-                {
-                    removeItem = item;                  
-                }
+                FreeSpaceOfShelf += removeItem.SpaceInCm;
+                Items.Remove(removeItem);
+                Console.WriteLine(removeItem);
             }
-            Items.Remove(removeItem);
-            Console.WriteLine(removeItem);
+
             return removeItem;
         }
 
-        public void ThrowingExpiredItemsFromShelf()
-        {
-           
+        public void ThrowingExpiredItems()
+        {    
            Items.RemoveAll(item => item.ExpiryDate < DateTime.Now);
         }
 
-        public List<Item> WhatEat(string type, string kosher)
+        public List<Item> WhatToEat(string type, string kosher)
         {
-            List<Item> items = new List<Item>();
-            foreach (Item item in Items)
-            {
-                if (item.Type.Equals(type) && item.Kosher.Equals(kosher) && item.ExpiryDate < DateTime.Now)
-                    items.Add(item);
-            }
-            return items;
+            return Items.Where(item => IsItemMatchCondition(item, type, kosher))
+                        .ToList();
         }
 
-       
+        private bool IsItemMatchCondition(Item item, string type, string kosher)
+        {
+            return item.Type.Equals(type) && item.Kosher.Equals(kosher) && item.ExpiryDate < DateTime.Now;
+        }
 
         public List<Item> SortItemsByDate(List<Item> items)
         {
-            items.Sort((item1, item2) => item1.ExpiryDate.CompareTo(item2.ExpiryDate));
-
-            return items;
+            return items.OrderBy(item => item.ExpiryDate).ToList();
         }
 
+        //The sum of the free space of the blocks under check whether to be thrown
         public double CheckingFreeSpaceProducts(string kosher, DateTime date)
         {
-            double sum = 0;
-            foreach (Item item in Items)
-            {
-                if (item.Kosher.Equals(kosher) && item.ExpiryDate <= date)
-                    sum += item.SpaceInCm;
-            }
-            return sum;
+            return Items.Where(item => IsItemMatchCondition(item, "", kosher) && item.ExpiryDate <= date)
+                        .Sum(item => item.SpaceInCm);
         }
 
-        public string CheckingProductsExpireSoonOfString(string kosher, DateTime date)
+        //The products whose expiration date is close and are being tested to see if they can be thrown away, chained to a string
+        public string CheckingProductsExpireSoon(string kosher, DateTime date)
         {
-            string items = "";
-            foreach (Item item in Items)
-            {
-                if (item.Kosher.Equals(kosher) && item.ExpiryDate <= date)
-                    items += item.ToString();
-            }
-            return items;
+            return string.Join("", Items.Where(item => IsItemMatchCondition(item, "", kosher) && item.ExpiryDate <= date)
+                                        .Select(item => item.ToString()));
         }
 
-        public void ThrowingProducts(string kosher, DateTime date)
+        public void ThrowingProductsExpireSoon(string kosher, DateTime date)
         {
             foreach (Item item in Items)
             {
-                if (item.Kosher.Equals(kosher) && item.ExpiryDate <= date)
+                if (IsItemMatchCondition(item, "", kosher) && item.ExpiryDate <= date)
                 {
-                    RemoveItemFromShelf(item.ID);
+                    RemoveItem(item.ID);
                 }
             }
         }
-
-       
-
-
-
     }
 }
-
